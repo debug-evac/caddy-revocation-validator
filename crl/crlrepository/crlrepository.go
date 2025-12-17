@@ -112,17 +112,19 @@ func (R *Repository) tryUpdateSignatureCertFromChain(entry *Entry, chains *core.
 	defer entry.entryLock.Unlock()
 	//check if no other thread updated the signature in meantime
 	if entry.LastUpdateSignatureVerifyFailed == true {
-		signature, err := verifyCRLSignature(entry.LastUpdateSignature, chains)
-		if err != nil {
-			R.logger.Warn("unable to find updated crl signature cert", zap.Error(err))
-			return
+		if R.crlConfig.SignatureValidationModeParsed != config.SignatureValidationModeNone {
+			signature, err := verifyCRLSignature(entry.LastUpdateSignature, chains)
+			if err != nil {
+				R.logger.Warn("unable to find updated crl signature cert", zap.Error(err))
+				return
+			}
+			err = entry.CRLStore.UpdateSignatureCertificate(signature)
+			if err != nil {
+				R.logger.Warn("unable to update crl signature cert", zap.Error(err))
+				return
+			}
+			entry.LastUpdateSignatureVerifyFailed = false
 		}
-		err = entry.CRLStore.UpdateSignatureCertificate(signature)
-		if err != nil {
-			R.logger.Warn("unable to update crl signature cert", zap.Error(err))
-			return
-		}
-		entry.LastUpdateSignatureVerifyFailed = false
 	}
 }
 
@@ -333,19 +335,21 @@ func (R *Repository) updateCrlEntry(entry *Entry, newChains *core.CertificateCha
 	if err != nil {
 		return err
 	}
-	R.logger.Info("verify crl signature of crl " + entry.CRLLoader.GetDescription())
-	signatureCert, err := verifyCRLSignature(result, chains)
-	if err != nil {
-		R.setLastSignatureVerifyFailed(entry, result)
-		R.logger.Warn("could not validate signature of crl", zap.String("crl", entry.CRLLoader.GetDescription()))
-		if R.crlConfig.SignatureValidationModeParsed == config.SignatureValidationModeVerify {
-			return err
-		}
-	} else {
-		R.resetLastSignatureVerifyFailed(entry)
-		err = processor.UpdateSignatureCertificate(signatureCert)
+	if R.crlConfig.SignatureValidationModeParsed != config.SignatureValidationModeNone {
+		R.logger.Info("verify crl signature of crl " + entry.CRLLoader.GetDescription())
+		signatureCert, err := verifyCRLSignature(result, chains)
 		if err != nil {
-			return err
+			R.setLastSignatureVerifyFailed(entry, result)
+			R.logger.Warn("could not validate signature of crl", zap.String("crl", entry.CRLLoader.GetDescription()))
+			if R.crlConfig.SignatureValidationModeParsed == config.SignatureValidationModeVerify {
+				return err
+			}
+		} else {
+			R.resetLastSignatureVerifyFailed(entry)
+			err = processor.UpdateSignatureCertificate(signatureCert)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
