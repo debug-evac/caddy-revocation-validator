@@ -7,15 +7,16 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"encoding/hex"
-	"github.com/gr33nbl00d/caddy-revocation-validator/core/utils"
-	"github.com/gr33nbl00d/caddy-revocation-validator/testhelper"
-	"github.com/smallstep/assert"
-	asn1crypto "golang.org/x/crypto/cryptobyte/asn1"
 	"math/big"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gr33nbl00d/caddy-revocation-validator/core/utils"
+	"github.com/gr33nbl00d/caddy-revocation-validator/testhelper"
+	"github.com/smallstep/assert"
+	asn1crypto "golang.org/x/crypto/cryptobyte/asn1"
 )
 
 func TestTagLength_CalculateTLVLength(t *testing.T) {
@@ -351,7 +352,7 @@ func TestReadStruct(t *testing.T) {
 	assert.Nil(t, err)
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	result := new(pkix.AlgorithmIdentifier)
-	err = ReadStruct(reader, result)
+	_, err = ReadStruct(reader, result)
 	assert.Nil(t, err)
 	assert.NotNil(t, result)
 	assert.Equals(t, expectedObjectIdentifier, result.Algorithm)
@@ -364,7 +365,7 @@ func TestReadStructWrongTag(t *testing.T) {
 	assert.Nil(t, err)
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	result := new(pkix.AlgorithmIdentifier)
-	err = ReadStruct(reader, result)
+	_, err = ReadStruct(reader, result)
 	assert.NotNil(t, err)
 	assert.Equals(t, "unexpected tag. Expected: 48 but found 4", err.Error())
 }
@@ -374,7 +375,7 @@ func TestReadStructInvalidTLVData(t *testing.T) {
 	assert.Nil(t, err)
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	result := new(pkix.AlgorithmIdentifier)
-	err = ReadStruct(reader, result)
+	_, err = ReadStruct(reader, result)
 	assert.NotNil(t, err)
 	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
 }
@@ -384,7 +385,7 @@ func TestReadStructIncompleteData(t *testing.T) {
 	assert.Nil(t, err)
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	result := new(pkix.AlgorithmIdentifier)
-	err = ReadStruct(reader, result)
+	_, err = ReadStruct(reader, result)
 	assert.NotNil(t, err)
 	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
 }
@@ -394,7 +395,7 @@ func TestReadStructInvalidDataContent(t *testing.T) {
 	assert.Nil(t, err)
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	result := new(pkix.AlgorithmIdentifier)
-	err = ReadStruct(reader, result)
+	_, err = ReadStruct(reader, result)
 	assert.NotNil(t, err)
 	assert.True(t, strings.HasPrefix(err.Error(), "asn1: structure error"))
 }

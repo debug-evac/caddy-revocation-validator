@@ -7,15 +7,16 @@ import (
 	"encoding/asn1"
 	"errors"
 	"fmt"
+	"math/big"
+	"os"
+	"time"
+
 	"github.com/gr33nbl00d/caddy-revocation-validator/core/asn1parser"
 	"github.com/gr33nbl00d/caddy-revocation-validator/core/hashing"
 	"github.com/gr33nbl00d/caddy-revocation-validator/core/signatureverify"
 	"github.com/gr33nbl00d/caddy-revocation-validator/core/utils"
 	"github.com/gr33nbl00d/caddy-revocation-validator/crl/crlreader/extensionsupport"
 	asn1crypto "golang.org/x/crypto/cryptobyte/asn1"
-	"math/big"
-	"os"
-	"time"
 )
 
 type StreamingCRLFileReader struct {
@@ -71,7 +72,7 @@ func (S StreamingCRLFileReader) ReadCRL(crlProcessor CRLProcessor, crlFilePath s
 	}
 	_, _ = S.readAlgorithmIdentifier(&reader) //skip algorithm identifier
 	issuer := new(pkix.RDNSequence)
-	err = asn1parser.ReadStruct(&reader, issuer)
+	_, err = asn1parser.ReadStruct(&reader, issuer)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +173,7 @@ func (S StreamingCRLFileReader) findAlgorithmIdentifierInCRL(file *os.File) (*pk
 		return nil, err
 	}
 	value := new(pkix.AlgorithmIdentifier)
-	err = asn1parser.ReadStruct(&reader, value)
+	_, err = asn1parser.ReadStruct(&reader, value)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +183,7 @@ func (S StreamingCRLFileReader) findAlgorithmIdentifierInCRL(file *os.File) (*pk
 
 func (S StreamingCRLFileReader) readAlgorithmIdentifier(reader asn1parser.Asn1Reader) (*pkix.AlgorithmIdentifier, error) {
 	value := new(pkix.AlgorithmIdentifier)
-	err := asn1parser.ReadStruct(reader, value)
+	_, err := asn1parser.ReadStruct(reader, value)
 	if err != nil {
 		return nil, err
 	}
@@ -235,7 +236,7 @@ func (S StreamingCRLFileReader) versionExists(reader hashing.HashingReaderWrappe
 func (S StreamingCRLFileReader) parseExtensions(reader hashing.HashingReaderWrapper) (*[]pkix.Extension, error) {
 	_, _ = asn1parser.ReadTagLength(&reader) //skip context specific tag
 	extensions := new([]pkix.Extension)
-	err := asn1parser.ReadStruct(&reader, extensions)
+	_, err := asn1parser.ReadStruct(&reader, extensions)
 	if err != nil {
 		return nil, err
 	}
@@ -251,6 +252,7 @@ func (S StreamingCRLFileReader) extensionsExists(reader hashing.HashingReaderWra
 }
 
 func (S StreamingCRLFileReader) parseRevokedCertificateList(issuer *pkix.RDNSequence, reader hashing.HashingReaderWrapper, processor CRLProcessor) error {
+
 	revokedCertListTag, err := asn1parser.ReadTagLength(&reader)
 	if err != nil {
 		return err
@@ -259,7 +261,12 @@ func (S StreamingCRLFileReader) parseRevokedCertificateList(issuer *pkix.RDNSequ
 	if err != nil {
 		return err
 	}
+	var readBytes = uint64(0)
+	bytesToRead := revokedCertListTag.CalculateValueLength().Uint64()
 	for {
+		if readBytes >= bytesToRead {
+			return err
+		}
 		revokedCertSeq, err := asn1parser.PeekTagLength(&reader, 0)
 		if err != nil {
 			return err
@@ -269,10 +276,11 @@ func (S StreamingCRLFileReader) parseRevokedCertificateList(issuer *pkix.RDNSequ
 			break
 		}
 		revokedCert := new(pkix.RevokedCertificate)
-		err = asn1parser.ReadStruct(&reader, revokedCert)
+		result, err := asn1parser.ReadStruct(&reader, revokedCert)
 		if err != nil {
 			return err
 		}
+		readBytes += uint64(result)
 		err = processor.InsertRevokedCertificate(&CRLEntry{
 			issuer,
 			revokedCert,

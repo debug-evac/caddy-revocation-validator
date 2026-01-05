@@ -47,17 +47,19 @@ func FindExtension(oidString string, extensions *[]pkix.Extension) *pkix.Extensi
 }
 
 func CheckForCriticalUnhandledCRLExtensions(extensions *[]pkix.Extension) error {
-	//Unhandled CRL Extensions in general:
-	//Delta CRL Indicator 2.5.29.27 - No delta list support (critical)
-	//FreshestCRL 2.5.29.47 - No delta list support (non-critical)
-	//Issuing Distribution Point 2.5.27.(Not needed as we get this information from cert to check) (non-critical)
-	//Authority Information Access 1.3.6.1.5.5.7.1.1 - We expect the signing cert to be in the chain for now (non-critical)
-	//Issuer Alternative Name 2.5.29.18 - Currently we only support normal issuer field as used in most cases (non-critical)
-	for _, extension := range *extensions {
-		if extension.Critical {
-			extensionIdStr := extension.Id.String()
-			if handledCRLExtensions[extensionIdStr] == false {
-				return errors.New(fmt.Sprintf("unhandled critical crl extension %s", extensionIdStr))
+	if extensions != nil {
+		//Unhandled CRL Extensions in general:
+		//Delta CRL Indicator 2.5.29.27 - No delta list support (critical)
+		//FreshestCRL 2.5.29.47 - No delta list support (non-critical)
+		//Issuing Distribution Point 2.5.27.(Not needed as we get this information from cert to check) (non-critical)
+		//Authority Information Access 1.3.6.1.5.5.7.1.1 - We expect the signing cert to be in the chain for now (non-critical)
+		//Issuer Alternative Name 2.5.29.18 - Currently we only support normal issuer field as used in most cases (non-critical)
+		for _, extension := range *extensions {
+			if extension.Critical {
+				extensionIdStr := extension.Id.String()
+				if handledCRLExtensions[extensionIdStr] == false {
+					return errors.New(fmt.Sprintf("unhandled critical crl extension %s", extensionIdStr))
+				}
 			}
 		}
 	}

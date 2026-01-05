@@ -1,10 +1,11 @@
 package crlreader
 
 import (
+	"testing"
+
 	revocation "github.com/gr33nbl00d/caddy-revocation-validator/core"
 	"github.com/gr33nbl00d/caddy-revocation-validator/testhelper"
 	"github.com/smallstep/assert"
-	"testing"
 )
 
 type CRLPersisterProcessorMock struct {
@@ -40,4 +41,19 @@ func TestReadCRLWithPadding(t *testing.T) {
 	result, err := reader.ReadCRL(CRLPersisterProcessorMock{}, testhelper.GetTestDataFilePath("crlpadding.pem"))
 	assert.Nil(t, err)
 	t.Logf("%v", result)
+}
+
+func TestReadCRLWithoutCRLNumber(t *testing.T) {
+	reader := StreamingCRLFileReader{}
+	result, err := reader.ReadCRL(CRLPersisterProcessorMock{}, testhelper.GetTestDataFilePath("canocrl.crl"))
+	assert.Nil(t, err)
+	t.Logf("%v", result)
+}
+
+func TestReadCRLWithoutExtensions(t *testing.T) {
+	reader := StreamingCRLFileReader{}
+	result, err := reader.ReadCRL(CRLPersisterProcessorMock{}, testhelper.GetTestDataFilePath("canoext.crl"))
+	assert.Nil(t, err)
+	t.Logf("%v", result)
+	t.Log(err)
 }

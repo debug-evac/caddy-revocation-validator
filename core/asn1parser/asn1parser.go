@@ -8,10 +8,11 @@ import (
 	"encoding/asn1"
 	"errors"
 	"fmt"
-	asn1crypto "golang.org/x/crypto/cryptobyte/asn1"
 	"io"
 	"math/big"
 	"time"
+
+	asn1crypto "golang.org/x/crypto/cryptobyte/asn1"
 )
 
 type Asn1Reader interface {
@@ -163,27 +164,29 @@ func ParseUTCTime(bytes []byte) (*time.Time, error) {
 	return &utcTime, nil
 }
 
-func ReadStruct(reader Asn1Reader, value interface{}) error {
+func ReadStruct(reader Asn1Reader, value interface{}) (int, error) {
+	bytesRead := 0
 	tagLength, err := PeekTagLength(reader, 0)
 	if err != nil {
-		return err
+		return bytesRead, err
 	}
 	err = ExpectTag(asn1crypto.SEQUENCE, tagLength.Tag)
 	if err != nil {
-		return err
+		return bytesRead, err
 	}
 	tlvBytes, err := ReadTVLBytesWithLimit(reader, *tagLength, 81920)
+	bytesRead = len(tlvBytes)
 	if err != nil {
-		return err
+		return bytesRead, err
 	}
 	rest, err := asn1.Unmarshal(tlvBytes, value)
 	if err != nil {
-		return err
+		return bytesRead, err
 	}
 	if len(rest) != 0 {
-		return errors.New("trailing data after asn1 object")
+		return bytesRead, errors.New("trailing data after asn1 object")
 	}
-	return nil
+	return bytesRead, nil
 }
 
 func ReadTVLBytesWithLimit(reader Asn1Reader, tagLength TagLength, maxLength int64) ([]byte, error) {
@@ -425,7 +428,7 @@ func ParseSubjectRDNSequence(cert *x509.Certificate) (*pkix.RDNSequence, error) 
 func ParseRDNSequence(rdnData []byte) (*pkix.RDNSequence, error) {
 	rdnObject := new(pkix.RDNSequence)
 	reader := bufio.NewReader(bytes.NewReader(rdnData))
-	err := ReadStruct(reader, rdnObject)
+	_, err := ReadStruct(reader, rdnObject)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse the RDNSequence: %v", err)
 	}

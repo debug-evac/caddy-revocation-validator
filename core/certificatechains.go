@@ -8,6 +8,7 @@ import (
 	"encoding/asn1"
 	"errors"
 	"fmt"
+
 	"github.com/gr33nbl00d/caddy-revocation-validator/core/asn1parser"
 	"github.com/gr33nbl00d/caddy-revocation-validator/crl/crlreader/extensionsupport"
 )
@@ -125,7 +126,7 @@ func findCertificateBySerialAndIssuer(identifier *extensionsupport.AuthorityKeyI
 				authorityCertIssuerDN := new(pkix.RDNSequence)
 				if len(identifier.AuthorityCertIssuer.DirectoryName.Bytes) > 0 {
 					reader := bufio.NewReader(bytes.NewReader(identifier.AuthorityCertIssuer.DirectoryName.Bytes))
-					err := asn1parser.ReadStruct(reader, authorityCertIssuerDN)
+					_, err := asn1parser.ReadStruct(reader, authorityCertIssuerDN)
 					if err != nil {
 						return nil, err
 					}
