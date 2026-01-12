@@ -1,9 +1,10 @@
 package revocation
 
 import (
+	"strconv"
+
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 	"github.com/gr33nbl00d/caddy-revocation-validator/config"
-	"strconv"
 )
 
 func parseConfigFromCaddyfile(d *caddyfile.Dispenser) (*UnmarshalledRevocationConfig, error) {
@@ -25,7 +26,7 @@ func parseConfigFromCaddyfile(d *caddyfile.Dispenser) (*UnmarshalledRevocationCo
 	for d.Next() {
 		for nesting := d.Nesting(); d.NextBlock(nesting); {
 			key := d.Val()
-			validatorConfig, err, done := parseConfigEntryFromCaddyfile(d, key, certRevocationValidatorConfig)
+			validatorConfig, err, done := parseConfigEntryFromCaddyfile(d, key, &certRevocationValidatorConfig)
 			if done {
 				return validatorConfig, err
 			}
@@ -34,7 +35,7 @@ func parseConfigFromCaddyfile(d *caddyfile.Dispenser) (*UnmarshalledRevocationCo
 	return &certRevocationValidatorConfig, nil
 }
 
-func parseConfigEntryFromCaddyfile(d *caddyfile.Dispenser, key string, certRevocationValidatorConfig UnmarshalledRevocationConfig) (*UnmarshalledRevocationConfig, error, bool) {
+func parseConfigEntryFromCaddyfile(d *caddyfile.Dispenser, key string, certRevocationValidatorConfig *UnmarshalledRevocationConfig) (*UnmarshalledRevocationConfig, error, bool) {
 	switch key {
 	case "mode":
 		if !d.NextArg() {
@@ -88,7 +89,7 @@ func parseCaddyfileOCSPConfig(d *caddyfile.Dispenser) (*config.OCSPConfig, error
 func parseCaddyfileCRLConfig(d *caddyfile.Dispenser) (*config.CRLConfig, error) {
 	crlConfig := config.CRLConfig{}
 	for nesting := d.Nesting(); d.NextBlock(nesting); {
-		c, err, done := parseCaddyFileCrlConfigEntry(d, crlConfig)
+		c, err, done := parseCaddyFileCrlConfigEntry(d, &crlConfig)
 		if done {
 			return c, err
 		}
@@ -96,7 +97,7 @@ func parseCaddyfileCRLConfig(d *caddyfile.Dispenser) (*config.CRLConfig, error) 
 	return &crlConfig, nil
 }
 
-func parseCaddyFileCrlConfigEntry(d *caddyfile.Dispenser, crlConfig config.CRLConfig) (*config.CRLConfig, error, bool) {
+func parseCaddyFileCrlConfigEntry(d *caddyfile.Dispenser, crlConfig *config.CRLConfig) (*config.CRLConfig, error, bool) {
 	switch d.Val() {
 	case "work_dir":
 		if !d.NextArg() {
