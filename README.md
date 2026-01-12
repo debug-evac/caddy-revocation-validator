@@ -55,7 +55,7 @@ Install xcaddy :
 
 After xcaddy installation you can build caddy with this plugin by executing:
 
-```xcaddy build v2.6.1 --with github.com/gr33nbl00d/caddy-revocation-validator```
+```xcaddy build latest --with github.com/gr33nbl00d/caddy-revocation-validator```
 
 The easiest way to use this plugin is to enable client revocation support via CDP and AIA certificate extensions. This requires that the client certificates has either CDP or AIA or both extensions
 defined
@@ -83,34 +83,38 @@ Minimal JSON config for OCSP and CRL support via CDP/AIA
 }
 ```
 
+Revocation check support can be also configured in the caddyfile syntax:
+
 # Example caddyfile config
-```caddyfile
-  
-	client_auth {
-		mode                   require_and_verify
-		trusted_ca_cert_file   ./certificates/customerca.crt
-		verifier revocation {
-		    mode crl_only
-            crl_config {
-              work_dir "./crlworkdir"
-              storage_type memory
-              update_interval 30m
-              signature_validation_mode verify_log
-              trusted_signature_cert_file "./certificates/customerca.crt"
-              cdp_config {
-                crl_fetch_mode fetch_actively
-                crl_cdp_strict true
-              }
-            }
-            ocsp_config {
-              default_cache_duration 30m
-              ocsp_aia_strict true
-            }
-		}
-	}	
+Not to caddyfile config: Json Array structures like "crl_urls" or "crl_files" are represented in caddyfile by multiple "crl_url" or "crl_file" entries.
+This is the standard way in caddyfile to represent arrays or lists. As the caddyfile has no native "array/list" support to keep it simple.
+Dont try to use "crl_files" or "crl_urls" keyword in caddyfile. Instead use multiple "crl_file" or "crl_url" entries. They will be joined to an array automatically.
+```
+client_auth {
+  mode require_and_verify
+  trusted_ca_cert_file   ./certificates/customerca.crt
+  verifier revocation {
+    mode crl_only
+    crl_config {
+      work_dir      "./crlworkdir"
+      storage_type  memory
+      update_interval 30m
+      signature_validation_mode verify_log
+      trusted_signature_cert_file "./certificates/customerca.crt"
+        cdp_config {
+          crl_fetch_mode fetch_actively
+          crl_cdp_strict true
+        }
+    }
+    ocsp_config {
+      default_cache_duration 30m
+      ocsp_aia_strict true
+    }
+  }
+}	  
 ```
 
-# Full Config Example
+# Full JSON Config Example
 
 ```json
 "client_authentication": {
