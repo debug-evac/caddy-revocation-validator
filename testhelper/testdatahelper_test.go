@@ -2,11 +2,12 @@ package testhelper
 
 import (
 	"fmt"
-	"github.com/smallstep/assert"
 	"path"
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetTestDataFilePath(t *testing.T) {
@@ -17,7 +18,7 @@ func TestGetTestDataFilePath(t *testing.T) {
 	}
 	curPath = path.Join(curPath, "../../")
 	resultRelative, err := filepath.Rel(curPath, result)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	resultRelative = filepath.ToSlash(resultRelative)
-	assert.Equals(t, "testdata/crl1", resultRelative)
+	assert.Equal(t, "testdata/crl1", resultRelative)
 }

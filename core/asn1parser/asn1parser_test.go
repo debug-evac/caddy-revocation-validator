@@ -15,7 +15,7 @@ import (
 
 	"github.com/gr33nbl00d/caddy-revocation-validator/core/utils"
 	"github.com/gr33nbl00d/caddy-revocation-validator/testhelper"
-	"github.com/smallstep/assert"
+	"github.com/stretchr/testify/assert"
 	asn1crypto "golang.org/x/crypto/cryptobyte/asn1"
 )
 
@@ -121,7 +121,7 @@ func TestReadUtcTimeWrongTag(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ReadUtcTime(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "unexpected tag. Expected: 17 but found 23", err.Error())
+	assert.Equal(t, "unexpected tag. Expected: 17 but found 23", err.Error())
 }
 
 func TestReadUtcTimeCorruptTLV(t *testing.T) {
@@ -131,7 +131,7 @@ func TestReadUtcTimeCorruptTLV(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ReadUtcTime(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
+	assert.Equal(t, "end of file reached while still expecting bytes EOF", err.Error())
 }
 
 func TestReadUtcTimeWithIncompleteData(t *testing.T) {
@@ -141,7 +141,7 @@ func TestReadUtcTimeWithIncompleteData(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ReadUtcTime(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
+	assert.Equal(t, "end of file reached while still expecting bytes EOF", err.Error())
 }
 
 func TestReadUtcTimeWithInvalidTimeFormat(t *testing.T) {
@@ -150,7 +150,7 @@ func TestReadUtcTimeWithInvalidTimeFormat(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ReadUtcTime(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "invalid time format detected parsing time \"\\xf150407223855Z\" as \"060102150405Z0700\": cannot parse \"\\xf150407223855Z\" as \"06\"", err.Error())
+	assert.Equal(t, "invalid time format detected parsing time \"\\xf150407223855Z\" as \"060102150405Z0700\": cannot parse \"\\xf150407223855Z\" as \"06\"", err.Error())
 }
 
 func TestReadUtcTimeWithYearAfter2050(t *testing.T) {
@@ -172,8 +172,8 @@ func TestParseBitString(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	result, err := ParseBitString(reader)
 	assert.Nil(t, err)
-	assert.Equals(t, expectedBitString.Bytes, result.Bytes)
-	assert.Equals(t, expectedBitString.BitLength, result.BitLength)
+	assert.Equal(t, expectedBitString.Bytes, result.Bytes)
+	assert.Equal(t, expectedBitString.BitLength, result.BitLength)
 }
 
 func TestParseBitStringWithBitLengthNotAMultipleOf8(t *testing.T) {
@@ -185,8 +185,8 @@ func TestParseBitStringWithBitLengthNotAMultipleOf8(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	result, err := ParseBitString(reader)
 	assert.Nil(t, err)
-	assert.Equals(t, expectedBitString.Bytes, result.Bytes)
-	assert.Equals(t, expectedBitString.BitLength, result.BitLength)
+	assert.Equal(t, expectedBitString.Bytes, result.Bytes)
+	assert.Equal(t, expectedBitString.BitLength, result.BitLength)
 }
 
 func TestParseBitStringWithIncorrectPadding1(t *testing.T) {
@@ -195,7 +195,7 @@ func TestParseBitStringWithIncorrectPadding1(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ParseBitString(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "invalid padding bits in BIT STRING", err.Error())
+	assert.Equal(t, "invalid padding bits in BIT STRING", err.Error())
 }
 
 func TestParseBitStringWithPaddingButOnlySingleByte(t *testing.T) {
@@ -204,7 +204,7 @@ func TestParseBitStringWithPaddingButOnlySingleByte(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ParseBitString(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "invalid padding bits in BIT STRING", err.Error())
+	assert.Equal(t, "invalid padding bits in BIT STRING", err.Error())
 }
 
 func TestParseBitStringWithNoneZeroPaddingBits(t *testing.T) {
@@ -213,7 +213,7 @@ func TestParseBitStringWithNoneZeroPaddingBits(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ParseBitString(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "invalid padding bits in BIT STRING", err.Error())
+	assert.Equal(t, "invalid padding bits in BIT STRING", err.Error())
 }
 
 func TestParseEmptyBitString(t *testing.T) {
@@ -222,7 +222,7 @@ func TestParseEmptyBitString(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ParseBitString(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "BitString is empty", err.Error())
+	assert.Equal(t, "BitString is empty", err.Error())
 }
 
 func TestParseBitStringWithWrongTag(t *testing.T) {
@@ -231,7 +231,7 @@ func TestParseBitStringWithWrongTag(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ParseBitString(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "unexpected tag. Expected: 3 but found 5", err.Error())
+	assert.Equal(t, "unexpected tag. Expected: 3 but found 5", err.Error())
 }
 
 func TestParseBitStringWithCorruptTLVData(t *testing.T) {
@@ -240,7 +240,7 @@ func TestParseBitStringWithCorruptTLVData(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ParseBitString(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
+	assert.Equal(t, "end of file reached while still expecting bytes EOF", err.Error())
 }
 
 func TestParseBitStringWithIncompleteData(t *testing.T) {
@@ -249,7 +249,7 @@ func TestParseBitStringWithIncompleteData(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ParseBitString(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
+	assert.Equal(t, "end of file reached while still expecting bytes EOF", err.Error())
 }
 
 func TestParseOctetString(t *testing.T) {
@@ -260,7 +260,7 @@ func TestParseOctetString(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	result, err := ParseOctetString(reader)
 	assert.Nil(t, err)
-	assert.Equals(t, expectedBytes, result)
+	assert.Equal(t, expectedBytes, result)
 
 }
 func TestParseOctetStringFailingBecauseOfInvalidTLVLength(t *testing.T) {
@@ -269,7 +269,7 @@ func TestParseOctetStringFailingBecauseOfInvalidTLVLength(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ParseOctetString(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
+	assert.Equal(t, "end of file reached while still expecting bytes EOF", err.Error())
 }
 
 func TestParseOctetStringFailingBecauseOfInvalidTLVTag(t *testing.T) {
@@ -278,7 +278,7 @@ func TestParseOctetStringFailingBecauseOfInvalidTLVTag(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ParseOctetString(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
+	assert.Equal(t, "end of file reached while still expecting bytes EOF", err.Error())
 }
 
 func TestParseOctetStringFailingBecauseOfNonOctetStringData(t *testing.T) {
@@ -287,7 +287,7 @@ func TestParseOctetStringFailingBecauseOfNonOctetStringData(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ParseOctetString(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "unexpected tag. Expected: 4 but found 5", err.Error())
+	assert.Equal(t, "unexpected tag. Expected: 4 but found 5", err.Error())
 }
 
 func TestCalculateWholeTLVLength(t *testing.T) {
@@ -301,7 +301,7 @@ func TestCalculateWholeTLVLength(t *testing.T) {
 	// Call the function being tested
 	result := CalculateWholeTLVLength(tagLength)
 
-	assert.Equals(t, 8, result)
+	assert.Equal(t, 8, result)
 
 }
 
@@ -330,7 +330,7 @@ func TestExpectLengthNotGreaterWithGreaterValue(t *testing.T) {
 	length2.SetUint64(6)
 	err := ExpectLengthNotGreater(length1, length2)
 	assert.NotNil(t, err)
-	assert.Equals(t, "length of tag is greater than expected. Expected max length 5 but length was 6", err.Error())
+	assert.Equal(t, "length of tag is greater than expected. Expected max length 5 but length was 6", err.Error())
 }
 
 func TestReadStruct(t *testing.T) {
@@ -355,9 +355,9 @@ func TestReadStruct(t *testing.T) {
 	_, err = ReadStruct(reader, result)
 	assert.Nil(t, err)
 	assert.NotNil(t, result)
-	assert.Equals(t, expectedObjectIdentifier, result.Algorithm)
-	assert.Equals(t, expectedValue.Parameters, result.Parameters)
-	assert.Equals(t, expectedValue, result)
+	assert.Equal(t, expectedObjectIdentifier, result.Algorithm)
+	assert.Equal(t, expectedValue.Parameters, result.Parameters)
+	assert.Equal(t, expectedValue, result)
 }
 
 func TestReadStructWrongTag(t *testing.T) {
@@ -367,7 +367,7 @@ func TestReadStructWrongTag(t *testing.T) {
 	result := new(pkix.AlgorithmIdentifier)
 	_, err = ReadStruct(reader, result)
 	assert.NotNil(t, err)
-	assert.Equals(t, "unexpected tag. Expected: 48 but found 4", err.Error())
+	assert.Equal(t, "unexpected tag. Expected: 48 but found 4", err.Error())
 }
 
 func TestReadStructInvalidTLVData(t *testing.T) {
@@ -377,7 +377,7 @@ func TestReadStructInvalidTLVData(t *testing.T) {
 	result := new(pkix.AlgorithmIdentifier)
 	_, err = ReadStruct(reader, result)
 	assert.NotNil(t, err)
-	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
+	assert.Equal(t, "end of file reached while still expecting bytes EOF", err.Error())
 }
 
 func TestReadStructIncompleteData(t *testing.T) {
@@ -387,7 +387,7 @@ func TestReadStructIncompleteData(t *testing.T) {
 	result := new(pkix.AlgorithmIdentifier)
 	_, err = ReadStruct(reader, result)
 	assert.NotNil(t, err)
-	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
+	assert.Equal(t, "end of file reached while still expecting bytes EOF", err.Error())
 }
 
 func TestReadStructInvalidDataContent(t *testing.T) {
@@ -412,7 +412,7 @@ func TestPeekTagLength(t *testing.T) {
 	result, err := PeekTagLength(reader, 0)
 	assert.Nil(t, err)
 	assert.NotNil(t, result)
-	assert.Equals(t, expectedTagLength, *result)
+	assert.Equal(t, expectedTagLength, *result)
 	expectByteNotInfluencedByPeek, err := reader.ReadByte()
 	assert.Nil(t, err)
 	assert.NotNil(t, expectByteNotInfluencedByPeek)
@@ -432,7 +432,7 @@ func TestPeekTagLengthWithOffset(t *testing.T) {
 	result, err := PeekTagLength(reader, 1)
 	assert.Nil(t, err)
 	assert.NotNil(t, result)
-	assert.Equals(t, expectedTagLength, *result)
+	assert.Equal(t, expectedTagLength, *result)
 	expectByteNotInfluencedByPeek, err := reader.ReadByte()
 	assert.Nil(t, err)
 	assert.NotNil(t, expectByteNotInfluencedByPeek)
@@ -445,7 +445,7 @@ func TestPeekTagLengthWithInvalidTLVData(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = PeekTagLength(reader, 0)
 	assert.NotNil(t, err)
-	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
+	assert.Equal(t, "end of file reached while still expecting bytes EOF", err.Error())
 }
 
 func TestReadLengthOneByte(t *testing.T) {
@@ -458,7 +458,7 @@ func TestReadLengthOneByte(t *testing.T) {
 	length, err := ReadLength(reader)
 	assert.Nil(t, err)
 	assert.NotNil(t, length)
-	assert.Equals(t, expectedLength, *length)
+	assert.Equal(t, expectedLength, *length)
 }
 
 func TestReadLengthTwoByte(t *testing.T) {
@@ -471,7 +471,7 @@ func TestReadLengthTwoByte(t *testing.T) {
 	length, err := ReadLength(reader)
 	assert.Nil(t, err)
 	assert.NotNil(t, length)
-	assert.Equals(t, expectedLength, *length)
+	assert.Equal(t, expectedLength, *length)
 }
 
 func TestReadLengthInvalidOneByteLength(t *testing.T) {
@@ -480,7 +480,7 @@ func TestReadLengthInvalidOneByteLength(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ReadLength(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
+	assert.Equal(t, "end of file reached while still expecting bytes EOF", err.Error())
 
 }
 
@@ -490,7 +490,7 @@ func TestReadLengthInvalidTwoByteLength(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ReadLength(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
+	assert.Equal(t, "end of file reached while still expecting bytes EOF", err.Error())
 
 }
 
@@ -504,7 +504,7 @@ func TestPeekLengthOneByte(t *testing.T) {
 	length, err := PeekLength(reader, 0)
 	assert.Nil(t, err)
 	assert.NotNil(t, length)
-	assert.Equals(t, expectedLength, *length)
+	assert.Equal(t, expectedLength, *length)
 	expectByteNotInfluencedByPeek, err := reader.ReadByte()
 	assert.Nil(t, err)
 	assert.NotNil(t, expectByteNotInfluencedByPeek)
@@ -521,7 +521,7 @@ func TestPeekLengthTwoByte(t *testing.T) {
 	length, err := PeekLength(reader, 0)
 	assert.Nil(t, err)
 	assert.NotNil(t, length)
-	assert.Equals(t, expectedLength, *length)
+	assert.Equal(t, expectedLength, *length)
 	expectByteNotInfluencedByPeek, err := reader.ReadByte()
 	assert.Nil(t, err)
 	assert.NotNil(t, expectByteNotInfluencedByPeek)
@@ -538,7 +538,7 @@ func TestPeekLengthWithOffset(t *testing.T) {
 	length, err := PeekLength(reader, 1)
 	assert.Nil(t, err)
 	assert.NotNil(t, length)
-	assert.Equals(t, expectedLength, *length)
+	assert.Equal(t, expectedLength, *length)
 	expectByteNotInfluencedByPeek, err := reader.ReadByte()
 	assert.Nil(t, err)
 	assert.NotNil(t, expectByteNotInfluencedByPeek)
@@ -551,7 +551,7 @@ func TestPeekLengthInvalidOneByteLength(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = PeekLength(reader, 0)
 	assert.NotNil(t, err)
-	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
+	assert.Equal(t, "end of file reached while still expecting bytes EOF", err.Error())
 
 }
 
@@ -561,7 +561,7 @@ func TestPeekLengthInvalidTwoByteLength(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = PeekLength(reader, 0)
 	assert.NotNil(t, err)
-	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
+	assert.Equal(t, "end of file reached while still expecting bytes EOF", err.Error())
 }
 
 func TestReadBigInt(t *testing.T) {
@@ -573,7 +573,7 @@ func TestReadBigInt(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	result, err := ReadBigInt(reader)
 	assert.Nil(t, err)
-	assert.Equals(t, expectedBigInt, result)
+	assert.Equal(t, expectedBigInt, result)
 }
 
 func TestReadBigIntInvalidTag(t *testing.T) {
@@ -582,7 +582,7 @@ func TestReadBigIntInvalidTag(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ReadBigInt(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "unexpected tag. Expected: 2 but found 4", err.Error())
+	assert.Equal(t, "unexpected tag. Expected: 2 but found 4", err.Error())
 }
 
 func TestReadBigIntInvalidTLV(t *testing.T) {
@@ -591,7 +591,7 @@ func TestReadBigIntInvalidTLV(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ReadBigInt(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
+	assert.Equal(t, "end of file reached while still expecting bytes EOF", err.Error())
 }
 
 func TestReadBigIntIncompleteData(t *testing.T) {
@@ -600,7 +600,7 @@ func TestReadBigIntIncompleteData(t *testing.T) {
 	reader := bufio.NewReader(bytes.NewReader(byteData))
 	_, err = ReadBigInt(reader)
 	assert.NotNil(t, err)
-	assert.Equals(t, "end of file reached while still expecting bytes EOF", err.Error())
+	assert.Equal(t, "end of file reached while still expecting bytes EOF", err.Error())
 }
 
 func TestParseRDNSequence(t *testing.T) {
@@ -635,7 +635,7 @@ func TestParseRDNSequence(t *testing.T) {
 		}}
 	result, err := ParseRDNSequence(byteData)
 	assert.Nil(t, err)
-	assert.Equals(t, expectedResult.String(), result.String())
+	assert.Equal(t, expectedResult.String(), result.String())
 }
 
 func TestParseRDNSequenceInvalidData(t *testing.T) {
@@ -643,7 +643,7 @@ func TestParseRDNSequenceInvalidData(t *testing.T) {
 	assert.Nil(t, err)
 	_, err = ParseRDNSequence(byteData)
 	assert.NotNil(t, err)
-	assert.Equals(t, "could not parse the RDNSequence: unexpected tag. Expected: 48 but found 4", err.Error())
+	assert.Equal(t, "could not parse the RDNSequence: unexpected tag. Expected: 48 but found 4", err.Error())
 }
 
 func TestParseIssuerRDNSequence(t *testing.T) {
@@ -679,7 +679,7 @@ func TestParseIssuerRDNSequence(t *testing.T) {
 	assert.Nil(t, err)
 	result, err := ParseIssuerRDNSequence(cert)
 	assert.Nil(t, err)
-	assert.Equals(t, expectedResult.String(), result.String())
+	assert.Equal(t, expectedResult.String(), result.String())
 }
 
 func TestParseSubjectRDNSequence(t *testing.T) {
@@ -715,5 +715,5 @@ func TestParseSubjectRDNSequence(t *testing.T) {
 	assert.Nil(t, err)
 	result, err := ParseSubjectRDNSequence(cert)
 	assert.Nil(t, err)
-	assert.Equals(t, expectedResult.String(), result.String())
+	assert.Equal(t, expectedResult.String(), result.String())
 }

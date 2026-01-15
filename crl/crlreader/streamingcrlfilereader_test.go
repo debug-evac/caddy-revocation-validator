@@ -5,7 +5,7 @@ import (
 
 	revocation "github.com/gr33nbl00d/caddy-revocation-validator/core"
 	"github.com/gr33nbl00d/caddy-revocation-validator/testhelper"
-	"github.com/smallstep/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 type CRLPersisterProcessorMock struct {

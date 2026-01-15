@@ -8,7 +8,6 @@ require (
 	github.com/caddyserver/caddy/v2 v2.10.2
 	github.com/google/uuid v1.6.0
 	github.com/muesli/cache2go v0.0.0-20221011235721-518229cd8021
-	github.com/smallstep/assert v0.0.0-20200723003110-82e2b9b3b262
 	github.com/stretchr/testify v1.11.1
 	github.com/syndtr/goleveldb v1.0.0
 	go.uber.org/zap v1.27.1

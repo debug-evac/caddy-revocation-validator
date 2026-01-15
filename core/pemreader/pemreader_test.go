@@ -7,8 +7,7 @@ import (
 	"encoding/hex"
 	"github.com/gr33nbl00d/caddy-revocation-validator/core/utils"
 	"github.com/gr33nbl00d/caddy-revocation-validator/testhelper"
-	"github.com/smallstep/assert"
-	assert2 "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"os"
 	"strings"
@@ -41,7 +40,7 @@ func TestNewPemReader(t *testing.T) {
 	testReader := bufio.NewReader(strings.NewReader("  some funky shiny bytes"))
 	result := NewPemReader(testReader)
 	assert.NotNil(t, result)
-	assert2.Same(t, testReader, result.Reader)
+	assert.Same(t, testReader, result.Reader)
 }
 
 func TestPemReader_Read(t *testing.T) {
@@ -54,7 +53,7 @@ func TestPemReader_Read(t *testing.T) {
 
 	hasher.Write(allBytes)
 	resultHash := hex.EncodeToString(hasher.Sum(nil))
-	assert.Equals(t, "13e491524e70a5b1057b9010fe7b5aa3fc8b60b6", resultHash)
+	assert.Equal(t, "13e491524e70a5b1057b9010fe7b5aa3fc8b60b6", resultHash)
 }
 
 func TestPemReader_ReadPemWithPadding(t *testing.T) {
@@ -67,7 +66,7 @@ func TestPemReader_ReadPemWithPadding(t *testing.T) {
 
 	hasher.Write(allBytes)
 	resultHash := hex.EncodeToString(hasher.Sum(nil))
-	assert.Equals(t, "1a0526838635309c0c7660d04372f66d1d54a1dd", resultHash)
+	assert.Equal(t, "1a0526838635309c0c7660d04372f66d1d54a1dd", resultHash)
 }
 
 func TestPemReader_ReadWithInvalidFile(t *testing.T) {

@@ -3,7 +3,7 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"github.com/smallstep/assert"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest"
@@ -46,7 +46,7 @@ func TestRetryFailing(t *testing.T) {
 	// Define the function under test.
 	mockRetry := MockRetry{countBeforeSuccess: 5}
 	err := Retry(attempts, sleepTime, logger, mockRetry.mockFunction)
-	assert.Equals(t, 2, retryMessageCount)
+	assert.Equal(t, 2, retryMessageCount)
 	// Check if the error matches the expected error.
 	if err.Error() != fmt.Sprintf("after %d attempts, last error: %s", attempts, expectedErr) {
 		t.Errorf("Unexpected error message. Expected: %s, Got: %s", expectedErr, err)
@@ -71,7 +71,7 @@ func TestRetryWith2Retries(t *testing.T) {
 	// Define the function under test.
 	mockRetry := MockRetry{countBeforeSuccess: 4}
 	err := Retry(attempts, sleepTime, logger, mockRetry.mockFunction)
-	assert.Equals(t, 3, retryMessageCount)
+	assert.Equal(t, 3, retryMessageCount)
 	assert.Nil(t, err)
 }
 
@@ -103,7 +103,7 @@ func TestCloseWithErrorHandling_AllSuccessful(t *testing.T) {
 		func() error { return nil },
 	)
 
-	assert.Equals(t, 0, len(logCapture.Messages), "expected no log messages")
+	assert.Equal(t, 0, len(logCapture.Messages), "expected no log messages")
 }
 
 func TestCloseWithErrorHandling_OneError(t *testing.T) {
@@ -115,7 +115,7 @@ func TestCloseWithErrorHandling_OneError(t *testing.T) {
 		func() error { return nil },
 	)
 
-	assert.Equals(t, 1, len(logCapture.Messages), "expected a log message")
+	assert.Equal(t, 1, len(logCapture.Messages), "expected a log message")
 	assert.True(t, strings.Contains(logCapture.Messages[0], "error(s) occurred while closing files: close error 1"))
 }
 
@@ -128,7 +128,7 @@ func TestCloseWithErrorHandling_MultipleErrors(t *testing.T) {
 		func() error { return errors.New("close error 2") },
 	)
 
-	assert.Equals(t, 1, len(logCapture.Messages), "expected a log message")
+	assert.Equal(t, 1, len(logCapture.Messages), "expected a log message")
 	assert.True(t, strings.Contains(logCapture.Messages[0], "error(s) occurred while closing files: close error 1; close error 2"))
 }
 
@@ -143,6 +143,6 @@ func TestCloseWithErrorHandling_MixedSuccessAndErrors(t *testing.T) {
 		func() error { return errors.New("close error 2") },
 	)
 
-	assert.Equals(t, 1, len(logCapture.Messages), "expected a log message")
+	assert.Equal(t, 1, len(logCapture.Messages), "expected a log message")
 	assert.True(t, strings.Contains(logCapture.Messages[0], "error(s) occurred while closing files: close error 1; close error 2"))
 }
