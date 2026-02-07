@@ -31,7 +31,7 @@ func (c *RevocationChecker) Provision(ctx caddy.Context, logger *zap.Logger, rev
 		}
 	}
 	logger.Info("start ocsp provisioning")
-	err := c.ocspRevocationChecker.Provision(revocationConfig.OCSOConfigParsed, logger)
+	err := c.ocspRevocationChecker.Provision(revocationConfig.OCSPConfigParsed, logger)
 	if err != nil {
 		return err
 	}

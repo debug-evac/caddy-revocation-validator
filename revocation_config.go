@@ -7,7 +7,7 @@ import (
 type ParsedRevocationConfig struct {
 	ModeParsed       config.RevocationCheckMode
 	CRLConfigParsed  *config.CRLConfigParsed
-	OCSOConfigParsed *config.OCSPConfigParsed
+	OCSPConfigParsed *config.OCSPConfigParsed
 	ConfigHash       string
 }
 
