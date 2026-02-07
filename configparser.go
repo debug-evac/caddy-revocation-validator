@@ -7,10 +7,11 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"github.com/gr33nbl00d/caddy-revocation-validator/config"
-	"go.uber.org/zap"
 	"os"
 	"time"
+
+	"github.com/gr33nbl00d/caddy-revocation-validator/config"
+	"go.uber.org/zap"
 )
 
 const defaultCRLUpdateInterval = 30 * time.Minute
@@ -186,9 +187,6 @@ func parseOCSPConfig(ocspConfig *config.OCSPConfig) (*config.OCSPConfigParsed, e
 		return nil, err
 	}
 	trustedResponderCerts, err := parseTrustedOcspResponderCerts(ocspConfig)
-	if err != nil {
-		return nil, err
-	}
 	if err != nil {
 		return nil, err
 	}

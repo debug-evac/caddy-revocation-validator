@@ -6,6 +6,12 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"strings"
+	"time"
+
 	"github.com/gr33nbl00d/caddy-revocation-validator/config"
 	"github.com/gr33nbl00d/caddy-revocation-validator/core"
 	"github.com/gr33nbl00d/caddy-revocation-validator/core/asn1parser"
@@ -13,11 +19,6 @@ import (
 	"github.com/muesli/cache2go"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ocsp"
-	"io"
-	"net/http"
-	"net/url"
-	"strings"
-	"time"
 )
 
 const (
@@ -98,7 +99,7 @@ func (c *OCSPRevocationChecker) IsRevoked(clientCertificate *x509.Certificate, v
 }
 
 func (c *OCSPRevocationChecker) calculateEvictionTime(response *ocsp.Response) time.Duration {
-	timeTillNextUpdate := response.NextUpdate.Sub(time.Now())
+	timeTillNextUpdate := time.Until(response.NextUpdate)
 	if timeTillNextUpdate > 0 {
 		return timeTillNextUpdate + maxClockSkew
 	} else {
