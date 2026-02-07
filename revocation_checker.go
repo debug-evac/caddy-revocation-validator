@@ -18,24 +18,22 @@ type RevocationChecker struct {
 
 func (c *RevocationChecker) Provision(ctx caddy.Context, logger *zap.Logger, revocationConfig *ParsedRevocationConfig) error {
 	c.RevocationConfig = revocationConfig
-	if c.RevocationConfig.IsCRLCheckingEnabled() {
-		c.crlRevocationChecker = &crl.CRLRevocationChecker{}
-	}
-	c.ocspRevocationChecker = &ocsp.OCSPRevocationChecker{}
+
+	var crl_err, ocsp_err error
 
 	if c.RevocationConfig.IsCRLCheckingEnabled() {
+		c.crlRevocationChecker = &crl.CRLRevocationChecker{}
 		logger.Info("crl checking was enabled start CRL provisioning")
-		err := c.crlRevocationChecker.Provision(revocationConfig.CRLConfigParsed, logger, revocationConfig.ConfigHash)
-		if err != nil {
-			return err
-		}
+		crl_err = c.crlRevocationChecker.Provision(revocationConfig.CRLConfigParsed, logger, revocationConfig.ConfigHash)
 	}
-	logger.Info("start ocsp provisioning")
-	err := c.ocspRevocationChecker.Provision(revocationConfig.OCSPConfigParsed, logger)
-	if err != nil {
-		return err
+
+	if c.RevocationConfig.IsOCSPCheckingEnabled() {
+		c.ocspRevocationChecker = &ocsp.OCSPRevocationChecker{}
+		logger.Info("ocsp checking was enabled start ocsp provisioning")
+		ocsp_err = c.ocspRevocationChecker.Provision(revocationConfig.OCSPConfigParsed, logger)
 	}
-	return nil
+
+	return errors.Join(crl_err, ocsp_err)
 }
 
 func (c *RevocationChecker) VerifyClientCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
@@ -65,16 +63,15 @@ func (c *RevocationChecker) VerifyClientCertificate(rawCerts [][]byte, verifiedC
 }
 
 func (c *RevocationChecker) Cleanup() error {
+	var crl_err, ocsp_err error
+
 	if c.RevocationConfig.IsCRLCheckingEnabled() {
-		err := c.crlRevocationChecker.Cleanup()
-		if err != nil {
-			return err
-		}
+		crl_err = c.crlRevocationChecker.Cleanup()
 	}
-	err := c.ocspRevocationChecker.Cleanup()
-	if err != nil {
-		return err
+	if c.RevocationConfig.IsOCSPCheckingEnabled() {
+		ocsp_err = c.ocspRevocationChecker.Cleanup()
 	}
-	return nil
+
+	return errors.Join(crl_err, ocsp_err)
 
 }
