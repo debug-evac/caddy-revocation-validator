@@ -12,11 +12,14 @@ import (
 	"go.uber.org/zap"
 )
 
+type IRevocationChecker interface {
+	IsRevoked(clientCertificate *x509.Certificate, verifiedChains [][]*x509.Certificate) (*core.RevocationStatus, error)
+	Cleanup() error
+}
+
 type RevocationChecker struct {
-	RevocationConfig      *ParsedRevocationConfig
-	crlRevocationChecker  *crl.CRLRevocationChecker
-	ocspRevocationChecker *ocsp.OCSPRevocationChecker
-	checkOrder            [](func(*x509.Certificate, [][]*x509.Certificate) (*core.RevocationStatus, error))
+	RevocationConfig   *ParsedRevocationConfig
+	revocationCheckers []IRevocationChecker
 }
 
 func (c *RevocationChecker) Provision(ctx caddy.Context, logger *zap.Logger, revocationConfig *ParsedRevocationConfig) error {
@@ -25,27 +28,22 @@ func (c *RevocationChecker) Provision(ctx caddy.Context, logger *zap.Logger, rev
 	var crl_err, ocsp_err error
 
 	if c.RevocationConfig.IsCRLCheckingEnabled() {
-		c.crlRevocationChecker = &crl.CRLRevocationChecker{}
+		crlRevocationChecker := &crl.CRLRevocationChecker{}
 		logger.Info("crl checking was enabled start CRL provisioning")
-		crl_err = c.crlRevocationChecker.Provision(revocationConfig.CRLConfigParsed, logger, revocationConfig.ConfigHash)
+		crl_err = crlRevocationChecker.Provision(revocationConfig.CRLConfigParsed, logger, revocationConfig.ConfigHash)
+		c.revocationCheckers = append(c.revocationCheckers, crlRevocationChecker)
 	}
 
 	if c.RevocationConfig.IsOCSPCheckingEnabled() {
-		c.ocspRevocationChecker = &ocsp.OCSPRevocationChecker{}
+		ocspRevocationChecker := &ocsp.OCSPRevocationChecker{}
 		logger.Info("ocsp checking was enabled start ocsp provisioning")
-		ocsp_err = c.ocspRevocationChecker.Provision(revocationConfig.OCSPConfigParsed, logger)
+		ocsp_err = ocspRevocationChecker.Provision(revocationConfig.OCSPConfigParsed, logger)
+		c.revocationCheckers = append(c.revocationCheckers, ocspRevocationChecker)
 	}
 
-	switch c.RevocationConfig.ModeParsed {
-	case config.RevocationCheckModePreferOCSP:
-		c.checkOrder = append(c.checkOrder, c.ocspRevocationChecker.IsRevoked, c.crlRevocationChecker.IsRevoked)
-	case config.RevocationCheckModePreferCRL:
-		c.checkOrder = append(c.checkOrder, c.crlRevocationChecker.IsRevoked, c.ocspRevocationChecker.IsRevoked)
-	case config.RevocationCheckModeCRLOnly:
-		c.checkOrder = append(c.checkOrder, c.crlRevocationChecker.IsRevoked)
-	case config.RevocationCheckModeOCSPOnly:
-		c.checkOrder = append(c.checkOrder, c.ocspRevocationChecker.IsRevoked)
-	case config.RevocationCheckModeDisabled:
+	// swap ocsp with crl checker, if ocsp is preferred
+	if c.RevocationConfig.ModeParsed == config.RevocationCheckModePreferOCSP {
+		c.revocationCheckers[0], c.revocationCheckers[1] = c.revocationCheckers[1], c.revocationCheckers[0]
 	}
 
 	return errors.Join(crl_err, ocsp_err)
@@ -55,8 +53,8 @@ func (c *RevocationChecker) VerifyClientCertificate(rawCerts [][]byte, verifiedC
 	if len(verifiedChains) > 0 {
 		clientCertificate := verifiedChains[0][0]
 
-		for i := range len(c.checkOrder) {
-			revoked, err := c.checkOrder[i](clientCertificate, verifiedChains)
+		for i := range len(c.revocationCheckers) {
+			revoked, err := c.revocationCheckers[i].IsRevoked(clientCertificate, verifiedChains)
 			if err != nil {
 				return err
 			}
@@ -69,15 +67,11 @@ func (c *RevocationChecker) VerifyClientCertificate(rawCerts [][]byte, verifiedC
 }
 
 func (c *RevocationChecker) Cleanup() error {
-	var crl_err, ocsp_err error
+	var rc_errors []error
 
-	if c.RevocationConfig.IsCRLCheckingEnabled() {
-		crl_err = c.crlRevocationChecker.Cleanup()
-	}
-	if c.RevocationConfig.IsOCSPCheckingEnabled() {
-		ocsp_err = c.ocspRevocationChecker.Cleanup()
+	for _, revocationChecker := range c.revocationCheckers {
+		rc_errors = append(rc_errors, revocationChecker.Cleanup())
 	}
 
-	return errors.Join(crl_err, ocsp_err)
-
+	return errors.Join(rc_errors...)
 }
